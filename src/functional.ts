@@ -1,3 +1,4 @@
+export * from "./functional/async";
 export * from "./functional/core";
 export * from "./functional/error-handling";
 export * from "./functional/generators";

@@ -24,3 +24,16 @@ export const leave = <T>(fn: MonadicReactive<T>): T | undefined => {
 	});
 	return v;
 };
+
+export const leaveAsync = <T>(fn: MonadicReactive<T>): Promise<T> => {
+	return new Promise<T>((resolve) => {
+		createReactiveContext((ctx) => {
+			const result = fn(ctx, reactiveCache)[0]();
+			if (result && typeof result === "object" && "promise" in result) {
+				(result.promise as Promise<T>).then(resolve);
+			} else {
+				resolve(result as T);
+			}
+		});
+	});
+};

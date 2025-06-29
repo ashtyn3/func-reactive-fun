@@ -37,3 +37,11 @@ export interface Err<E> {
 
 export type Try<T, E> = Ok<T> | Err<E>;
 export type TryReactive<T, E> = MonadicReactive<Try<T, E>>;
+
+export interface PromiseReactive<T, E> {
+	readonly _tag: "Promise";
+	readonly promise: Promise<Try<T, E>>;
+	readonly state: "pending" | "fulfilled" | "rejected";
+	readonly value: T | undefined;
+	readonly error: E | undefined;
+}

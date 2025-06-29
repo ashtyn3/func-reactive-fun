@@ -1,20 +1,60 @@
-import { effect, map, pipe, run, value, zip } from "./src/functional";
+import { leaveAsync, run, value } from "./src/functional";
+import {
+	effectAsync,
+	genFuncAsync,
+	pipeAsync,
+	promise,
+} from "./src/functional/async";
+import type { PromiseReactive } from "./src/functional/types";
 
-const a = value(1);
+// Define the User type from the API
+interface User {
+	id: number;
+	name: string;
+	username: string;
+	email: string;
+	address: {
+		street: string;
+		suite: string;
+		city: string;
+		zipcode: string;
+		geo: {
+			lat: string;
+			lng: string;
+		};
+	};
+	phone: string;
+	website: string;
+	company: {
+		name: string;
+		catchPhrase: string;
+		bs: string;
+	};
+}
 
-const b = value(2);
+// Define the transformed result type
+type UserDisplay = string;
 
-const both = zip(a, b);
+// Simple API test using pipeAsync
+console.log("=== Simple API Test with pipeAsync ===");
 
-const added = map(both, (both) => both[0] + both[1]);
+// Create a promise that fetches user data
+const userPromise = promise<User, unknown>(
+	fetch("https://jsonplaceholder.typicode.com/users/1").then(
+		(res) => res.json() as Promise<User>,
+	),
+);
 
+// Transform the user data with proper typing
 run(
-	effect((get) => {
-		console.log(get(added));
-	}),
-	pipe(both, (v) => {
-		v[0] = 10;
-		v[1] = 20;
-		return v;
+	pipeAsync(userPromise, async (promiseReactive) => {
+		if (promiseReactive.state === "fulfilled" && promiseReactive.value) {
+			promiseReactive.value.username = "Bob";
+			return promiseReactive;
+		}
+		return promiseReactive;
 	}),
 );
+
+const user = await leaveAsync(userPromise);
+console.log(user);
